@@ -12,6 +12,7 @@ func main() {
 
 	fs := http.FileServer(http.Dir("./public"))
 	r.PathPrefix("/public/").Handler(http.StripPrefix("/public/", fs))
+
 	fmt.Println("Server Listening at *:7010")
 	http.ListenAndServe(":7010", r)
 }
