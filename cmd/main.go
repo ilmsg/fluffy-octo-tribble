@@ -26,8 +26,12 @@ func main() {
 	fs := http.FileServer(http.Dir("./public"))
 	r.PathPrefix("/public/").Handler(http.StripPrefix("/public/", fs))
 
+	// update proifle
+	r.HandleFunc("/users/profile", hUser.UpdateProfile).Methods(http.MethodPatch)
+	// change password
+	r.HandleFunc("/users/password", hUser.ChangePassword).Methods(http.MethodPatch)
+
 	r.HandleFunc("/users/:id", hUser.Get).Methods(http.MethodGet)
-	r.HandleFunc("/users/:id", hUser.Update).Methods(http.MethodPatch)
 	r.HandleFunc("/users/:id", hUser.Delete).Methods(http.MethodDelete)
 	r.HandleFunc("/users", hUser.Create).Methods(http.MethodPost)
 	r.HandleFunc("/users", hUser.List).Methods(http.MethodGet)

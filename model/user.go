@@ -23,6 +23,9 @@ type RegisterDto struct {
 	Email           string `json:"email"`
 	Password        string `json:"password"`
 	ConfirmPassword string `json:"confirm_password"`
+
+	Name     string `json:"name"`
+	Location string `json:"location"`
 }
 
 type LoginDto struct {
@@ -41,6 +44,14 @@ type ChangePasswordDto struct {
 }
 
 type PasswordRecoveryDto struct {
+	Email string
+}
+
+type NewPassword struct {
+	Password string
+}
+
+type ResetPasswordDto struct {
 	Email string
 }
 
