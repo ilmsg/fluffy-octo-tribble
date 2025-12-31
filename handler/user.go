@@ -17,11 +17,32 @@ type UserWebHandler struct {
 
 // ChangePassword implements [domain.IUserHandler].
 func (h *UserWebHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	userId, err := util.GetValueFromContext(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	var changePasswordDto model.ChangePasswordDto
 	if err := json.NewDecoder(r.Body).Decode(&changePasswordDto); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// validate password dto
+	user, err := h.srv.Get(userId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	auth := &user.Auth
+	auth.Password = changePasswordDto.NewPassword
+	if err := h.srv.ChangePassword(auth, userId); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	newPassword := model.NewPassword{
 		Password: changePasswordDto.NewPassword,
 	}

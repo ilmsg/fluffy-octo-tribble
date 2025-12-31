@@ -1,6 +1,11 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"fmt"
+
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
+)
 
 type User struct {
 	gorm.Model
@@ -11,12 +16,40 @@ type User struct {
 type Auth struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	UserId   uint   `json:"user_id"`
+}
+
+func (auth *Auth) BeforeCreate(tx *gorm.DB) (err error) {
+	err = tx.First(&Auth{}, "email = ?", auth.Email).Error
+	if (err != nil && err.Error() != "record not found") || err == nil {
+		err = fmt.Errorf("user exists")
+		return
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(auth.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	auth.Password = string(hash)
+	return nil
+}
+
+func (auth *Auth) BeforeUpdate(tx *gorm.DB) (err error) {
+	if auth.Password != "" {
+		hash, err := bcrypt.GenerateFromPassword([]byte(auth.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return err
+		}
+		tx.UpdateColumn("Password", hash)
+	}
+	return
 }
 
 type Profile struct {
 	Name     string `json:"name"`
 	Location string `json:"location"`
-	UserId   uint
+	UserId   uint   `json:"user_id"`
 }
 
 type RegisterDto struct {

@@ -10,6 +10,7 @@ import (
 	"github.com/ilmsg/fluffy-octo-tribble/model"
 	"github.com/ilmsg/fluffy-octo-tribble/repository"
 	"github.com/ilmsg/fluffy-octo-tribble/service"
+	"github.com/ilmsg/fluffy-octo-tribble/util"
 )
 
 func main() {
@@ -26,15 +27,19 @@ func main() {
 	fs := http.FileServer(http.Dir("./public"))
 	r.PathPrefix("/public/").Handler(http.StripPrefix("/public/", fs))
 
-	// update proifle
-	r.HandleFunc("/users/profile", hUser.UpdateProfile).Methods(http.MethodPatch)
-	// change password
-	r.HandleFunc("/users/password", hUser.ChangePassword).Methods(http.MethodPatch)
+	routeAuth := r.PathPrefix("/users").Subrouter()
+	routeAuth.Use(util.AuthorizationMiddleware)
+	routeAuth.HandleFunc("/", hUser.Get).Methods(http.MethodGet)                     // get profile
+	routeAuth.HandleFunc("/", hUser.Delete).Methods(http.MethodDelete)               // soft delete
+	routeAuth.HandleFunc("/profile", hUser.UpdateProfile).Methods(http.MethodPatch)  // update proifle
+	routeAuth.HandleFunc("/password", hUser.ChangePassword).Methods(http.MethodPost) // change password
+
+	r.HandleFunc("/users/password/reset", hUser.ResetPassword).Methods(http.MethodGet) // recovery password
+	r.HandleFunc("/users/register", hUser.Create).Methods(http.MethodPost)
+	r.HandleFunc("/users/login", hUser.Create).Methods(http.MethodPost)
 
 	r.HandleFunc("/users/:id", hUser.Get).Methods(http.MethodGet)
-	r.HandleFunc("/users/:id", hUser.Delete).Methods(http.MethodDelete)
-	r.HandleFunc("/users", hUser.Create).Methods(http.MethodPost)
-	r.HandleFunc("/users", hUser.List).Methods(http.MethodGet)
+	r.HandleFunc("/users", hUser.List).Methods(http.MethodGet) // manager
 
 	fmt.Println("Server Listening at *:7010")
 	http.ListenAndServe(":7010", r)

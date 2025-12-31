@@ -26,12 +26,20 @@ func (repo *UserRepository) Get(id int) (model.User, error) {
 	return user, tx.Error
 }
 
+func (repo *UserRepository) Delete(id int) error {
+	return repo.db.Delete(&model.User{}, id).Error
+}
+
 func (repo *UserRepository) Update(user *model.User) error {
 	return repo.db.Save(user).Error
 }
 
-func (repo *UserRepository) Delete(id int) error {
-	return repo.db.Delete(&model.User{}, id).Error
+func (repo *UserRepository) UpdateProfile(profile *model.Profile, userId int) error {
+	return repo.db.Where("userId = ?", userId).Updates(profile).Error
+}
+
+func (repo *UserRepository) ChangePassword(auth *model.Auth, userId int) error {
+	return repo.db.Where("userId = ?", userId).Updates(auth).Error
 }
 
 func NewUserRepository(db *gorm.DB) domain.IUserRepository {
