@@ -9,8 +9,8 @@ import (
 
 type User struct {
 	gorm.Model
-	Auth    Auth
-	Profile Profile
+	Auth    *Auth
+	Profile *Profile
 }
 
 type Auth struct {
@@ -90,4 +90,8 @@ type ResetPasswordDto struct {
 
 type Token struct {
 	AccessToken string
+}
+
+type LoginRes struct {
+	Token string
 }

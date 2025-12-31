@@ -8,10 +8,15 @@ import (
 
 type IUserRepository interface {
 	List(page int, limit int) ([]model.User, error)
-	Create(user *model.User) error
 	Get(id int) (model.User, error)
 	Delete(id int) error
 	Update(user *model.User) error
+
+	// Exists(email string) (isExists bool)
+
+	Create(user *model.User) error
+	Register(registerDto *model.RegisterDto) (model.User, error)
+	Login(loginDto *model.LoginDto) (model.Auth, error)
 
 	UpdateProfile(profile *model.Profile, userId int) error
 	ChangePassword(auth *model.Auth, userId int) error
@@ -19,9 +24,12 @@ type IUserRepository interface {
 
 type IUserService interface {
 	List(page int, limit int) ([]model.User, error)
-	Create(user *model.User) error
 	Get(id int) (model.User, error)
 	Delete(id int) error
+
+	Create(user *model.User) error
+	Register(registerDto *model.RegisterDto) (model.User, error)
+	Login(loginDto *model.LoginDto) (model.Auth, error)
 
 	UpdateProfile(profile *model.Profile, userId int) error
 	ChangePassword(auth *model.Auth, userId int) error
@@ -29,9 +37,12 @@ type IUserService interface {
 
 type IUserHandler interface {
 	List(w http.ResponseWriter, r *http.Request)
-	Create(w http.ResponseWriter, r *http.Request)
 	Get(w http.ResponseWriter, r *http.Request)
 	Delete(w http.ResponseWriter, r *http.Request)
+
+	Create(w http.ResponseWriter, r *http.Request)
+	Register(w http.ResponseWriter, r *http.Request)
+	Login(w http.ResponseWriter, r *http.Request)
 
 	UpdateProfile(w http.ResponseWriter, r *http.Request)
 	ChangePassword(w http.ResponseWriter, r *http.Request)

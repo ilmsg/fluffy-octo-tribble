@@ -15,6 +15,54 @@ type UserWebHandler struct {
 	srv domain.IUserService
 }
 
+// Login implements [domain.IUserHandler].
+func (h *UserWebHandler) Login(w http.ResponseWriter, r *http.Request) {
+	var loginDto model.LoginDto
+	if err := json.NewDecoder(r.Body).Decode(&loginDto); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	auth, err := h.srv.Login(&loginDto)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	token, err := util.CreateToken(auth.UserId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	loginRes := model.LoginRes{Token: token}
+	json.NewEncoder(w).Encode(loginRes)
+}
+
+// Register implements [domain.IUserHandler].
+func (h *UserWebHandler) Register(w http.ResponseWriter, r *http.Request) {
+	var registerDto model.RegisterDto
+	if err := json.NewDecoder(r.Body).Decode(&registerDto); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	user, err := h.srv.Register(&registerDto)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	token, err := util.CreateToken(user.ID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	loginRes := model.LoginRes{Token: token}
+	json.NewEncoder(w).Encode(loginRes)
+}
+
 // ChangePassword implements [domain.IUserHandler].
 func (h *UserWebHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	userId, err := util.GetValueFromContext(r.Context())
@@ -36,7 +84,7 @@ func (h *UserWebHandler) ChangePassword(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	auth := &user.Auth
+	auth := user.Auth
 	auth.Password = changePasswordDto.NewPassword
 	if err := h.srv.ChangePassword(auth, userId); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -75,11 +123,11 @@ func (h *UserWebHandler) Create(w http.ResponseWriter, r *http.Request) {
 	// validate RegisterDto
 
 	newUser := model.User{
-		Auth: model.Auth{
+		Auth: &model.Auth{
 			Email:    registerDto.Email,
 			Password: registerDto.Password,
 		},
-		Profile: model.Profile{
+		Profile: &model.Profile{
 			Name:     registerDto.Name,
 			Location: registerDto.Location,
 		},
@@ -94,7 +142,7 @@ func (h *UserWebHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 // Delete implements [domain.IUserHandler].
 func (h *UserWebHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	panic("unimplemented")
+
 }
 
 // Get implements [domain.IUserHandler].
