@@ -27,19 +27,22 @@ func main() {
 	fs := http.FileServer(http.Dir("./public"))
 	r.PathPrefix("/public/").Handler(http.StripPrefix("/public/", fs))
 
-	routeAuth := r.PathPrefix("/users").Subrouter()
+	r.Use(util.LoggingMiddleware)
+	rApi := r.PathPrefix("/api").Subrouter()
+
+	routeAuth := rApi.PathPrefix("/users").Subrouter()
 	routeAuth.Use(util.AuthorizationMiddleware)
-	routeAuth.HandleFunc("/", hUser.Get).Methods(http.MethodGet)                     // get profile
-	routeAuth.HandleFunc("/", hUser.Delete).Methods(http.MethodDelete)               // soft delete
-	routeAuth.HandleFunc("/profile", hUser.UpdateProfile).Methods(http.MethodPatch)  // update proifle
-	routeAuth.HandleFunc("/password", hUser.ChangePassword).Methods(http.MethodPost) // change password
+	routeAuth.HandleFunc("/", hUser.Delete).Methods(http.MethodDelete)                // soft delete
+	routeAuth.HandleFunc("/profile", hUser.GetProfile).Methods(http.MethodGet)        // get profile
+	routeAuth.HandleFunc("/profile", hUser.UpdateProfile).Methods(http.MethodPatch)   // update proifle
+	routeAuth.HandleFunc("/password", hUser.ChangePassword).Methods(http.MethodPatch) // change password
 
-	r.HandleFunc("/users/password/reset", hUser.ResetPassword).Methods(http.MethodGet) // recovery password
-	r.HandleFunc("/users/register", hUser.Register).Methods(http.MethodPost)
-	r.HandleFunc("/users/login", hUser.Login).Methods(http.MethodPost)
+	rApi.HandleFunc("/users/register", hUser.Register).Methods(http.MethodPost)
+	rApi.HandleFunc("/users/login", hUser.Login).Methods(http.MethodPost)
+	// rApi.HandleFunc("/users/password/reset", hUser.ResetPassword).Methods(http.MethodGet) // recovery password
 
-	r.HandleFunc("/users/:id", hUser.Get).Methods(http.MethodGet)
-	r.HandleFunc("/users", hUser.List).Methods(http.MethodGet) // manager
+	// rApi.HandleFunc("/users/:id", hUser.Get).Methods(http.MethodGet)
+	// rApi.HandleFunc("/users", hUser.List).Methods(http.MethodGet) // manager
 
 	fmt.Println("Server Listening at *:7010")
 	http.ListenAndServe(":7010", r)

@@ -13,6 +13,13 @@ type UserRepository struct {
 	db *gorm.DB
 }
 
+// GetProfile implements [domain.IUserRepository].
+func (repo *UserRepository) GetProfile(id uint) (model.Profile, error) {
+	var profile model.Profile
+	tx := repo.db.Where("user_id = ?", id).First(&profile)
+	return profile, tx.Error
+}
+
 // func (repo *UserRepository) Exists(email string) (isExists bool) {
 // 	var auth model.Auth
 // 	err := repo.db.First(&auth, "email = ?", email).Error
@@ -68,13 +75,13 @@ func (repo *UserRepository) Create(user *model.User) error {
 	return repo.db.Create(&user).Error
 }
 
-func (repo *UserRepository) Get(id int) (model.User, error) {
+func (repo *UserRepository) Get(id uint) (model.User, error) {
 	var user model.User
 	tx := repo.db.First(&user, id)
 	return user, tx.Error
 }
 
-func (repo *UserRepository) Delete(id int) error {
+func (repo *UserRepository) Delete(id uint) error {
 	return repo.db.Delete(&model.User{}, id).Error
 }
 
@@ -82,12 +89,12 @@ func (repo *UserRepository) Update(user *model.User) error {
 	return repo.db.Save(user).Error
 }
 
-func (repo *UserRepository) UpdateProfile(profile *model.Profile, userId int) error {
-	return repo.db.Where("userId = ?", userId).Updates(profile).Error
+func (repo *UserRepository) UpdateProfile(profile *model.Profile, userId uint) error {
+	return repo.db.Where("user_id = ?", userId).Updates(profile).Error
 }
 
-func (repo *UserRepository) ChangePassword(auth *model.Auth, userId int) error {
-	return repo.db.Where("userId = ?", userId).Updates(auth).Error
+func (repo *UserRepository) ChangePassword(auth *model.Auth, userId uint) error {
+	return repo.db.Where("user_id = ?", userId).Updates(auth).Error
 }
 
 func NewUserRepository(db *gorm.DB) domain.IUserRepository {

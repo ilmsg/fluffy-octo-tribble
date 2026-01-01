@@ -25,12 +25,12 @@ func (s *UserService) Create(user *model.User) error {
 }
 
 // Delete implements [domain.IUserService].
-func (s *UserService) Delete(id int) error {
+func (s *UserService) Delete(id uint) error {
 	return s.repo.Delete(id)
 }
 
 // Get implements [domain.IUserService].
-func (s *UserService) Get(id int) (model.User, error) {
+func (s *UserService) Get(id uint) (model.User, error) {
 	return s.repo.Get(id)
 }
 
@@ -39,13 +39,18 @@ func (s *UserService) List(page int, limit int) ([]model.User, error) {
 	return s.repo.List(page, limit)
 }
 
+// GetProfile implements [domain.IUserService].
+func (s *UserService) GetProfile(id uint) (model.Profile, error) {
+	return s.repo.GetProfile(id)
+}
+
 // UpdateProfile implements [domain.IUserService].
-func (s *UserService) UpdateProfile(profile *model.Profile, userId int) error {
+func (s *UserService) UpdateProfile(profile *model.Profile, userId uint) error {
 	return s.repo.UpdateProfile(profile, userId)
 }
 
 // ChangePassword implements [domain.IUserService].
-func (s *UserService) ChangePassword(auth *model.Auth, userId int) error {
+func (s *UserService) ChangePassword(auth *model.Auth, userId uint) error {
 	return s.repo.ChangePassword(auth, userId)
 }
 

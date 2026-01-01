@@ -27,7 +27,7 @@ func CreateToken(userId uint) (token string, err error) {
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
-			Subject:   string(userId),
+			Subject:   fmt.Sprint(userId),
 		},
 		Exp: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 	})
@@ -74,15 +74,15 @@ func AuthorizationMiddleware(next http.Handler) http.Handler {
 		// username := jwtMapClaims.Username
 		log.Println("AuthorizationMiddleware:", userId)
 
-		ctx := context.WithValue(r.Context(), "user_id", "1")
+		ctx := context.WithValue(r.Context(), "user_id", userId)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
-func GetValueFromContext(ctx context.Context) (userId int, err error) {
-	userId, ok := ctx.Value("user_id").(int)
+func GetValueFromContext(ctx context.Context) (userId uint, err error) {
+	userId, ok := ctx.Value("user_id").(uint)
 	if !ok {
-		return 0, fmt.Errorf("userId not found in context")
+		return 0, fmt.Errorf("Unauthorized")
 	}
 	return userId, nil
 }
