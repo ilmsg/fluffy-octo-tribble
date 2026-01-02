@@ -1,11 +1,23 @@
 package util
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/ilmsg/fluffy-octo-tribble/model"
 )
+
+func GetDataResponse(w http.ResponseWriter, status int, message string, data any) {
+	dataRes := model.DataResponse{
+		Status:  status,
+		Message: message,
+		Data:    data,
+	}
+	json.NewEncoder(w).Encode(dataRes)
+}
 
 func PageLimit(r *http.Request) (page int, limit int) {
 	page, _ = strconv.Atoi(r.URL.Query().Get("page"))

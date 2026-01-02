@@ -22,6 +22,10 @@ func main() {
 	sUser := service.NewUserService(rUser)
 	hUser := handler.NewUserWebHandler(sUser)
 
+	rProject := repository.NewProjectRepository(db)
+	sProject := service.NewProjectService(rProject)
+	hProject := handler.NewProjectHandler(sProject)
+
 	r := mux.NewRouter()
 
 	fs := http.FileServer(http.Dir("./public"))
@@ -43,6 +47,14 @@ func main() {
 
 	// rApi.HandleFunc("/users/:id", hUser.Get).Methods(http.MethodGet)
 	// rApi.HandleFunc("/users", hUser.List).Methods(http.MethodGet) // manager
+
+	routeProject := rApi.PathPrefix("/projects").Subrouter()
+	routeProject.Use(util.AuthorizationMiddleware)
+	routeProject.HandleFunc("", hProject.Create).Methods(http.MethodPost)
+	routeProject.HandleFunc("", hProject.List).Methods(http.MethodGet)
+	routeProject.HandleFunc("/{id}", hProject.Get).Methods(http.MethodGet)
+	routeProject.HandleFunc("/{id}", hProject.Update).Methods(http.MethodPatch)
+	routeProject.HandleFunc("/{id}", hProject.Delete).Methods(http.MethodDelete)
 
 	fmt.Println("Server Listening at *:7010")
 	http.ListenAndServe(":7010", r)

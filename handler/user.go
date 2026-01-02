@@ -17,19 +17,19 @@ type UserWebHandler struct {
 func (h *UserWebHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var loginDto model.LoginDto
 	if err := json.NewDecoder(r.Body).Decode(&loginDto); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		util.GetDataResponse(w, 500, err.Error(), nil)
 		return
 	}
 
 	auth, err := h.srv.Login(&loginDto)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		util.GetDataResponse(w, 500, err.Error(), nil)
 		return
 	}
 
 	token, err := util.CreateToken(auth.UserId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		util.GetDataResponse(w, 500, err.Error(), nil)
 		return
 	}
 
@@ -40,19 +40,19 @@ func (h *UserWebHandler) Login(w http.ResponseWriter, r *http.Request) {
 func (h *UserWebHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var registerDto model.RegisterDto
 	if err := json.NewDecoder(r.Body).Decode(&registerDto); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		util.GetDataResponse(w, 500, err.Error(), nil)
 		return
 	}
 
 	user, err := h.srv.Register(&registerDto)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		util.GetDataResponse(w, 500, err.Error(), nil)
 		return
 	}
 
 	token, err := util.CreateToken(user.ID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		util.GetDataResponse(w, 500, err.Error(), nil)
 		return
 	}
 
@@ -63,27 +63,27 @@ func (h *UserWebHandler) Register(w http.ResponseWriter, r *http.Request) {
 func (h *UserWebHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	userId, err := util.GetValueFromContext(r.Context())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		util.GetDataResponse(w, 500, err.Error(), nil)
 		return
 	}
 
 	var changePasswordDto model.ChangePasswordDto
 	if err := json.NewDecoder(r.Body).Decode(&changePasswordDto); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		util.GetDataResponse(w, 500, err.Error(), nil)
 		return
 	}
 
 	// validate password dto
 	user, err := h.srv.Get(userId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		util.GetDataResponse(w, 500, err.Error(), nil)
 		return
 	}
 
 	auth := user.Auth
 	auth.Password = changePasswordDto.NewPassword
 	if err := h.srv.ChangePassword(auth, userId); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		util.GetDataResponse(w, 500, err.Error(), nil)
 		return
 	}
 
@@ -96,7 +96,7 @@ func (h *UserWebHandler) ChangePassword(w http.ResponseWriter, r *http.Request) 
 func (h *UserWebHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
 	var resetPasswordDto model.ResetPasswordDto
 	if err := json.NewDecoder(r.Body).Decode(&resetPasswordDto); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		util.GetDataResponse(w, 500, err.Error(), nil)
 		return
 	}
 
@@ -111,7 +111,7 @@ func (h *UserWebHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
 func (h *UserWebHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var registerDto model.RegisterDto
 	if err := json.NewDecoder(r.Body).Decode(&registerDto); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		util.GetDataResponse(w, 500, err.Error(), nil)
 		return
 	}
 
@@ -128,7 +128,7 @@ func (h *UserWebHandler) Create(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 	if err := h.srv.Create(&newUser); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		util.GetDataResponse(w, 500, err.Error(), nil)
 		return
 	}
 
@@ -146,7 +146,7 @@ func (h *UserWebHandler) Get(w http.ResponseWriter, r *http.Request) {
 	// id, _ := strconv.Atoi(mux.Vars(r)["id"])
 	user, err := h.srv.Get(userId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		util.GetDataResponse(w, 500, err.Error(), nil)
 		return
 	}
 
@@ -157,7 +157,7 @@ func (h *UserWebHandler) List(w http.ResponseWriter, r *http.Request) {
 	page, limit := util.PageLimit(r)
 	users, err := h.srv.List(page, limit)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		util.GetDataResponse(w, 500, err.Error(), nil)
 		return
 	}
 
@@ -170,11 +170,11 @@ func (h *UserWebHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 
 	profile, err := h.srv.GetProfile(userId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		util.GetDataResponse(w, 500, err.Error(), nil)
 		return
 	}
 
-	json.NewEncoder(w).Encode(profile)
+	util.GetDataResponse(w, 200, "Profile retrieved successfully", profile)
 }
 
 func (h *UserWebHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
@@ -182,18 +182,23 @@ func (h *UserWebHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 
 	var profileDto model.ProfileDto
 	if err := json.NewDecoder(r.Body).Decode(&profileDto); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		util.GetDataResponse(w, 500, err.Error(), nil)
 		return
 	}
 
 	newProfile := model.Profile{Name: profileDto.Name, Location: profileDto.Location}
 	err := h.srv.UpdateProfile(&newProfile, userId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		util.GetDataResponse(w, 500, err.Error(), nil)
 		return
 	}
 
-	json.NewEncoder(w).Encode(newProfile)
+	profile, err := h.srv.GetProfile(userId)
+	if err != nil {
+		util.GetDataResponse(w, 500, err.Error(), nil)
+		return
+	}
+	util.GetDataResponse(w, 200, "Profile updated successfully", profile)
 }
 
 func NewUserWebHandler(srv domain.IUserService) domain.IUserHandler {
