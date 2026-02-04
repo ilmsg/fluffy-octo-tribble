@@ -1,0 +1,10 @@
+{{define "title"}}Project List{{end}}
+
+{{define "body"}}
+{{ range .projects }}
+  <tr>
+    <td>{{.ID}}</td>
+    <td>{{.Title}}</td>
+  </tr>
+{{ end }}
+{{end}}

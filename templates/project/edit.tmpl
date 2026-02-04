@@ -1,0 +1,21 @@
+{{define "title"}}
+<div class="container">
+  <h1 class="mt-5">Project {{if .project.ID }} Edit {{else}} New {{end}}</h1>
+</div>
+<hr />
+{{end}} {{define "body"}}
+<form method="post" action="/projects">
+  <input type="hidden" name="id" value="{{.project.ID}}"/>
+  <div class="form-group">
+    <label for="inputTitle">Title</label>
+    <input type="text" class="form-control" id="inputTitle" name="title" aria-describedby="Title" value="{{.project.Title}}"/>
+  </div>
+  <div class="form-group">
+    <label for="inputDescription">Description</label>
+    <textarea class="form-control" id="inputDescription" name="description" rows="4" cols="80">{{.project.Description}}</textarea>
+  </div>
+  <div class="form-group">
+    <button type="submit" class="btn btn-primary">Save</button>
+  </div>
+</form>
+{{end}}
